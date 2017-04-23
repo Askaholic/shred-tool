@@ -5,6 +5,7 @@ import os.path
 import random
 import math
 
+DELETE = False
 EXACT = False
 PASSES = 5
 VERBOSE = False
@@ -13,10 +14,11 @@ WRITE_ZEROES = False
 def printHelp():
 	print "usage:\ttool filename {arguments}\n"
 	print "\t-n, --iterations\tSet the number of passes to write random data"
-	print "\t-v, --verbose\tEnable verbose output"
-	print "\t-x, --exact\tDo not round up to the next full block size"
-	print "\t-z, --zero\tWrite a final pass of zeros"
-	print "\t-h, --help\tDisplay help"
+	print "\t-u\t\t\tDelete the file"
+	print "\t-v, --verbose\t\tEnable verbose output"
+	print "\t-x, --exact\t\tDo not round up to the next full block size"
+	print "\t-z, --zero\t\tWrite a final pass of zeros"
+	print "\t-h, --help\t\tDisplay help"
 	quit()
 
 def writeZeroes(file, size):
@@ -83,6 +85,8 @@ if arglen > 2:
 						WRITE_ZEROES = True
 					elif arg[c] == 'x':
 						EXACT = True
+					elif arg[c] == 'u':
+						DELETE = True
 					elif arg[c] == 'v':
 						VERBOSE = True
 					elif arg[c] == 'h':
@@ -94,6 +98,7 @@ if arglen > 2:
 # Check if file exists
 if not os.path.isfile(file_name):
 	print "'" + file_name + "' does not exist"
+	quit()
 
 file_stats = os.stat(file_name)
 bytes_to_write = file_stats.st_size
@@ -103,7 +108,7 @@ if not EXACT:
 
 if VERBOSE:
 	print "Destroying: " + file_name
-	print "Block size: " + str(file_stats.st_size)
+	print "File size: " + str(file_stats.st_size)
 	print "Bytes to overwrite: " + str(bytes_to_write)
 
 file = open(file_name, "rb+", 1)
@@ -114,3 +119,10 @@ if WRITE_ZEROES:
 	writeZeroes(file, bytes_to_write)
 	
 file.close()
+
+if DELETE:
+	if VERBOSE:
+		print "Removing file..."
+	os.remove(file_name)
+	if VERBOSE:
+		print "Removed file succesfully"
